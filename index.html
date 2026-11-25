@@ -587,13 +587,20 @@
 
   /* ===== pestaña activa + aparecer al bajar ===== */
   const tabEls = $$(".tab");
+  /* Mueve solo la barra de pestañas (de lado), nunca la página: scrollIntoView hacía brincar el scroll vertical. */
+  function centerTab(t){
+    const box = tabsEl;
+    const dx = t.getBoundingClientRect().left - box.getBoundingClientRect().left;
+    const target = box.scrollLeft + dx - (box.clientWidth - t.offsetWidth) / 2;
+    if (Math.abs(box.scrollLeft - target) > 4) box.scrollTo({left: target, behavior: "auto"});
+  }
   const secs = [["menu", tabFav], ...MENU.map(c => ["cat-" + c.id, tabs_(c.id)])];
   function tabs_(id){ return tabEls.find(t => t.getAttribute("href") === "#cat-" + id); }
   if ("IntersectionObserver" in window){
     const act = new IntersectionObserver(es => es.forEach(e => {
       if (!e.isIntersecting) return;
       const t = (secs.find(s => s[0] === e.target.id) || [])[1];
-      if (t){ tabEls.forEach(x => x.removeAttribute("aria-current")); t.setAttribute("aria-current","true"); t.scrollIntoView({inline:"center", block:"nearest"}); }
+      if (t){ tabEls.forEach(x => x.removeAttribute("aria-current")); t.setAttribute("aria-current","true"); centerTab(t); }
     }), {rootMargin:"-30% 0px -60% 0px"});
     secs.forEach(s => { const el = document.getElementById(s[0]); if (el) act.observe(el); });
 
